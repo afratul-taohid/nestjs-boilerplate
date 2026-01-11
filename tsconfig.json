@@ -1,15 +1,47 @@
 {
   "compilerOptions": {
+    "target": "ES2021",
     "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
+    "lib": ["ES2021"],
+    "moduleResolution": "node",
+
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2017",
-    "sourceMap": true,
+
+    "strict": true,
+    "skipLibCheck": true,
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
     "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true
-  }
+    "assets": [
+      {
+        "include": "src/public/**/*",
+        "outDir": "dist/public"
+      }
+    ]
+  },
+  "exclude": ["node_modules", "dist",
+    "prisma.config"
+  ]
 }
+
+
+
+
+//{
+//  "compilerOptions": {
+//    "module": "commonjs",
+//    "declaration": true,
+//    "removeComments": true,
+//    "emitDecoratorMetadata": true,
+//    "experimentalDecorators": true,
+//    "allowSyntheticDefaultImports": true,
+//    "target": "es2017",
+//    "sourceMap": true,
+//    "outDir": "./dist",
+//    "baseUrl": "./",
+//    "incremental": true
+//  }
+//}

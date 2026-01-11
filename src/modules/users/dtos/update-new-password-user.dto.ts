@@ -5,10 +5,10 @@ export class UpdateNewPasswordDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsJWT()
-  readonly token: string;
+  readonly token?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @Length(4, 16)
-  readonly password: string;
+  readonly password?: string;
 }

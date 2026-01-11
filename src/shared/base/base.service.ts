@@ -1,198 +1,112 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { ObjectId } from 'mongodb';
-import { FindManyOptions, FindOptionsOrder, Repository } from 'typeorm';
-import { PaginationConstants } from '../constants';
-import { ComparaisonTypeEnum, ComparatorEnum, QueryDto } from '../search/search-dto';
-import { SearchResponse } from '../search/search-response.dto';
-import { ResponsePaginate } from '../types/ResponsePaginate';
 import { IGetUserAuthInfoRequest } from '../user-request.interface';
-import { findByField } from '../utils/find-by-field.utils';
-import { BaseEntity } from './base.entity';
 import { BaseCreateDto } from './dtos/create-base.dto';
 import { BaseUpdateDto } from './dtos/update-base.dto';
 import { IBaseService } from './interfaces/base-service.interface';
+import { PrismaService } from '../prisma/prisma.service';
 
+// type PrismaModelDelegate<T> = {
+//   findMany(args?: any): Promise<T[]>;
+//   findUnique(args: any): Promise<T | null>;
+//   create(args: { data: any }): Promise<T>;
+//   update(args: { where: any; data: any }): Promise<T>;
+//   delete(args: { where: any }): Promise<void>;
+//   deleteMany(args?: any): Promise<void>;
+// };
+
+@Injectable({ scope: Scope.REQUEST })
 export abstract class BaseService<
-  T extends BaseEntity,
+  T,
+  D,
   createDto extends BaseCreateDto,
   updateDto extends BaseUpdateDto
 > implements IBaseService<T, createDto, updateDto>
 {
   constructor(
-    private readonly repository: Repository<T>,
-    @Inject(REQUEST) public readonly request: IGetUserAuthInfoRequest
-  ) {}
+    @Inject() protected readonly prisma: PrismaService,
+    @Inject(REQUEST) protected readonly request: IGetUserAuthInfoRequest
+  ) {
+    this.initModel();
+  }
 
+  protected model: D | undefined;
+
+  abstract initModel(): void;
   async findAll(): Promise<T[]> {
-    return this.repository.find({ where: { isDeleted: false } as FindManyOptions<T>['where'] });
+    return (this.model as any).findMany();
   }
 
-  async paginate(take, skip): Promise<ResponsePaginate<T>> {
-    const queryTake = +take || PaginationConstants.DEFAULT_TAKE;
-    const querySkip = +skip || PaginationConstants.DEFAULT_SKIP;
-    const findOptions: FindManyOptions<T> = {
-      where: {
-        isDeleted: false
-      } as unknown as FindManyOptions<T>,
-      take: queryTake,
-      skip: querySkip,
-      //order: { createdAt: -1 },
-      ...(take || skip || {})
-    };
-
-    const [result, total] = await this.repository.findAndCount(findOptions);
-    return {
-      data: result,
-      count: total
-    };
-  }
-
-  async findOne(_id: ObjectId): Promise<T> {
-    // throws error 404 if not found
-    const entity = await findByField(this.repository, { id: _id }, true);
-    return await this.populate(entity);
-    //return this.repository.findOne(_id);
-  }
-
-  private createObject(dto: createDto | updateDto): T {
-    const newEntity = {} as T;
-    return Object.assign(newEntity, dto);
+  async findOne(id: string): Promise<T> {
+    return (this.model as any).findUnique({ where: { id } });
   }
 
   /**
    *
-   * @param data : the CreateDTO of the submitted entity
+   * @param dto : BaseCreateDto CreateDTO of the submitted entity
    * @returns : The created entity
    */
-  async create(data: createDto): Promise<T> {
-    const newEntity = this.createObject(data);
-    newEntity.isDeleted = false;
+  async create(dto: createDto): Promise<T> {
+    const data: any = { ...dto };
     if (this.request.user) {
-      newEntity.userCreated = this.request.user._id;
-      newEntity.userUpdated = this.request.user._id;
+      if ('createdById' in data) data.createdById = this.request.user.id;
+      if ('updatedById' in data) data.updatedById = this.request.user.id;
     }
-    const entity = this.repository.create(newEntity as any);
-    return this.repository.save(entity as any);
-  }
 
+    console.log(data)
+
+    return (this.model as any).create({ data });
+  }
   /**
    *
-   * @param _id : the ID of the entity
-   * @param dto : the DTO to be assigned for the entity
+   * @param id : string ID of the entity
+   * @param dto : BaseUpdateDto DTO to be assigned for the entity
    * @returns : The modified entity
    */
-  async update(_id: ObjectId, dto: updateDto): Promise<T> {
-    let newEntity = this.createObject(dto);
+  async update(id: string, dto: updateDto): Promise<T> {
+    const data: any = { ...dto };
+
     if (this.request.user) {
-      newEntity.userUpdated = this.request.user._id;
+      if ('updatedById' in data) data.updatedById = this.request.user.id;
     }
-    newEntity = await this.repository.preload({
-      _id: (await findByField(this.repository, { id: _id }, true))._id,
-      ...dto
-    } as any);
-
-    return this.repository.save(newEntity as any);
+    return (this.model as any).update({
+      where: { id },
+      data
+    });
   }
+  /**
+   *
+   * @param id : string of the given entity
+   * @param archived : boolean status of archive
+   * This method applies logical deletion or restoration from the database by setting the isDeleted to true or false
+   */
+  async updateStatus(id: string, archived: boolean): Promise<T> {
+    const data: any = { isDeleted: archived };
 
-  async delete(_id: ObjectId): Promise<void> {
-    await findByField(this.repository, { _id }, true);
-    await this.repository.delete(_id);
+    if (this.request.user) {
+      data.updatedById = this.request.user.id;
+    }
+
+    return (this.model as any).update({
+      where: { id },
+      data: { ...data }
+    });
   }
 
   /**
    *
-   * @param _id : ObjectId of the given entity
+   * @param id : string of the given entity
    * This method applies logical deletion or restoration from the database by setting the isDeleted to true or false
    */
-  async updateStatus(_id: ObjectId, isDeleted: boolean): Promise<T> {
-    let entity = {} as T;
-    entity = await findByField(this.repository, { _id }, true);
-    entity.isDeleted = isDeleted;
-    if (this.request.user) {
-      entity.userUpdated = this.request.user._id;
-    }
-    return await this.repository.save(entity as any);
+  async delete(id: string): Promise<void> {
+    await (this.model as any).delete({ where: { id } });
   }
 
-  /**
-   * This method deletes permanently from the database
-   */
   async clear(): Promise<void> {
-    try {
-      await this.repository.clear();
-    } catch (error) {
-      if (error.name === 'MongoError' && error.code === 26) {
-        // Handle "is not found" error
-        // Perform alternative logic or error handling
-        console.log('Collection does not exist. Unable to clear.');
-      } else {
-        // Handle other errors
-        console.log('An error occurred:', error);
-      }
-    }
+    await (this.model as any).deleteMany({});
   }
 
-  async search(data: QueryDto<T>): Promise<SearchResponse<T>> {
-    const query: FindManyOptions<T> = { where: {} }; // initialize query to an empty object
-
-    const queryTake = +data.take || PaginationConstants.DEFAULT_TAKE;
-    const querySkip = +data.skip || PaginationConstants.DEFAULT_SKIP;
-    const filterCriteria = data.attributes.map(attribute => {
-      return {
-        [attribute.key]:
-          attribute.comparator == ComparatorEnum.EQUALS
-            ? attribute.value
-            : attribute.comparator == ComparatorEnum.LIKE
-            ? RegExp(`^${attribute.value}`, 'i')
-            : attribute.value
-      };
-    });
-    query.where =
-      data.type.toUpperCase() === ComparaisonTypeEnum.AND ? { $and: filterCriteria } : ({ $or: filterCriteria } as any);
-    const [result, total] = await this.repository.findAndCount({
-      where: query.where,
-      order: data.orders as FindOptionsOrder<T>,
-      ...(data.isPaginable == true || data.isPaginable == undefined
-        ? {
-            take: queryTake,
-            skip: querySkip
-          }
-        : {})
-    });
-    return {
-      data: result,
-      count: total,
-      ...(data.isPaginable == true || data.isPaginable == undefined
-        ? {
-            page: querySkip,
-            totalPages: total == queryTake ? Math.trunc(total / queryTake) : Math.trunc(total / queryTake + 1)
-          }
-        : {})
-    };
-  }
-
-  /**
-   * Populate entit(y|ies) passed in paramter with "userCreated" and "userUpdated" properties
-   * @param entities Array of entities OR an entity to populate
-   * @returns Entit(y|ies) populated
-   */
-  private async populate(entities: Array<T> | any): Promise<Array<T> | any> {
-    if (!entities) return;
-
-    let tmp = entities;
-    if (!Array.isArray(tmp)) tmp = [tmp];
-
-    for (const idx in tmp) {
-      const { userCreated, userUpdated } = tmp[idx];
-
-      if (userCreated)
-        tmp[idx].userCreated = await findByField(this.repository, { _id: userCreated?._id ?? userCreated });
-
-      if (userUpdated)
-        tmp[idx].userUpdated = await findByField(this.repository, { _id: userUpdated?._id ?? userUpdated });
-    }
-
-    return Array.isArray(entities) ? tmp : tmp[0];
-  }
+  // async search(query: any): Promise<T[]> {
+  //   return this.prisma[this.model].findMany(query) as unknown as T[];
+  // }
 }

@@ -1,15 +1,10 @@
-import { ObjectId } from 'mongodb';
-import { QueryDto } from '../../search/search-dto';
-import { ResponsePaginate } from 'src/shared/types/ResponsePaginate';
-
-export interface IBaseService<T, createDto, updateDto> {
+export interface IBaseService<T, CreateDto, UpdateDto> {
   findAll(): Promise<T[]>;
-  paginate(take: number, skip: number): Promise<ResponsePaginate<T>>;
-  create(entity: createDto): Promise<T>;
-  update(_id: ObjectId, entity: updateDto): Promise<T>;
-  findOne(_id: ObjectId): Promise<T>;
-  updateStatus(_id: ObjectId, isDeleted: boolean): Promise<T>;
-  delete(_id: ObjectId): Promise<void>;
+  findOne(id: string): Promise<T>;
+  create(dto: CreateDto, userId?: string): Promise<T>;
+  update(id: string, dto: UpdateDto, userId?: string): Promise<T>;
+  updateStatus(id: string, archived: boolean, userId?: string): Promise<T>;
+  delete(id: string): Promise<void>;
   clear(): Promise<void>;
-  search(data?: QueryDto<T>);
+  // search(query: any): Promise<T[]>;
 }

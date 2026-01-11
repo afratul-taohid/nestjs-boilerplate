@@ -7,16 +7,16 @@ export class ProductCreateDto extends BaseCreateDto {
   @IsNotEmpty()
   @IsString()
   @Length(4, 30)
-  name: string;
+  email?: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  price: number;
-
-  @ApiProperty()
   @IsString()
-  @IsOptional()
-  @Length(3, 3000)
-  description: string;
+  password?: string;
+
+  // @ApiProperty()
+  // @IsString()
+  // @IsOptional()
+  // @Length(3, 3000)
+  // description?: string;
 }

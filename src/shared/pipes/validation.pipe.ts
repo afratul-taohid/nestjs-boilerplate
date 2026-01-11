@@ -1,10 +1,11 @@
 import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { throwError } from '../utils/throw-error.utils';
+import { throwError } from '../utils/validation.helper';
+
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
-  async transform(value, metadata: ArgumentMetadata) {
+  async transform(value: any, metadata: ArgumentMetadata) {
     if (!value) {
       throw new BadRequestException('No data submitted');
     }
@@ -24,9 +25,9 @@ export class ValidationPipe implements PipeTransform<any> {
     return value;
   }
 
-  private buildError(errors) {
+  private buildError(errors: any) {
     const result = {};
-    errors.forEach(el => {
+    errors.forEach((el: any) => {
       let prop = el.property;
       let constraints = el;
       // if object to validate has nested objects
@@ -35,13 +36,14 @@ export class ValidationPipe implements PipeTransform<any> {
         constraints = constraints.children[0];
       }
       Object.entries(constraints.constraints).forEach(constraint => {
+        // @ts-ignore
         result[prop + constraint[0]] = `${constraint[1]}`;
       });
     });
     return result;
   }
 
-  private toValidate(metatype): boolean {
+  private toValidate(metatype: any): boolean {
     const types = [String, Boolean, Number, Array, Object];
     return !types.find(type => metatype === type);
   }

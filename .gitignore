@@ -38,3 +38,4 @@ lerna-debug.log*
 documentation
 
 /data
+/src/generated/prisma

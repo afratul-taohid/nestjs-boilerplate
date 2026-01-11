@@ -1,6 +1,6 @@
 export class SearchResponse<T> {
-  count: number;
+  count?: number;
   page?: number;
   totalPages?: number;
-  data: T[];
+  data?: T[];
 }

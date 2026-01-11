@@ -7,10 +7,10 @@ export class CategoryUpdateDto extends BaseUpdateDto {
   @IsOptional()
   @IsString()
   @Length(4, 30)
-  name: string;
+  name?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsNumber()
-  quantity: number;
+  quantity?: number;
 }

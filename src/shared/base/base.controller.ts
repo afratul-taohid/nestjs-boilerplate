@@ -1,24 +1,17 @@
-import { Body, Delete, Get, Param, Patch, Post, Put, Query, Type, UsePipes } from '@nestjs/common';
+import { Body, Delete, Get, Param, Patch, Post, Put, Type, UsePipes } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { ObjectId } from 'mongodb';
-import { AbstractValidationPipe } from '../pipes';
-import { QueryDto } from '../search/search-dto';
-import { ValidateObjectIdPipe } from './../pipes/validate-object-id.pipe';
-import { BaseEntity } from './base.entity';
+import { AbstractValidationPipe, ValidateUUIDPipe } from '../pipes';
 import { IBaseController } from './interfaces/base-controller.interface';
 import { IBaseService } from './interfaces/base-service.interface';
-import { ResponsePaginate } from '../types/ResponsePaginate';
 
-export function BaseController<T extends BaseEntity, createDto, updateDto>(
+export function BaseController<T extends { id: string }, createDto, updateDto>(
   createDto: Type<createDto>,
   updateDto: Type<updateDto>
 ): Type<IBaseController<T, createDto, updateDto>> {
   const createPipe = new AbstractValidationPipe({ whitelist: true, transform: true }, { body: createDto });
   const updatePipe = new AbstractValidationPipe({ whitelist: true, transform: true }, { body: updateDto });
 
-  class GenericsController<T extends BaseEntity, createDto, updateDto>
-    implements IBaseController<T, createDto, updateDto>
-  {
+  class GenericsController implements IBaseController<T, createDto, updateDto> {
     constructor(private readonly service: IBaseService<T, createDto, updateDto>) {}
 
     @Get()
@@ -26,24 +19,16 @@ export function BaseController<T extends BaseEntity, createDto, updateDto>(
       return this.service.findAll();
     }
 
-    @Get('paginate')
-    @ApiQuery({ allowEmptyValue: true, name: 'take' })
-    @ApiQuery({ allowEmptyValue: true, name: 'skip' })
-    @ApiResponse({ description: 'returns results of pagination' })
-    async paginate(@Query('take') take, @Query('skip') skip): Promise<ResponsePaginate<T>> {
-      return this.service.paginate(+take, +skip);
-    }
-
     @Get('find/:id')
     @ApiQuery({
-      name: '_id',
+      name: 'id',
       type: 'string',
       allowEmptyValue: false,
-      description: 'used to update an object inside our database',
+      description: 'used to find an object inside our database',
       required: true
     })
-    async findOne(@Param(new ValidateObjectIdPipe('')) params): Promise<T> {
-      return this.service.findOne(new ObjectId(params.id));
+    async findOne(@Param('id', new ValidateUUIDPipe()) id: string): Promise<T> {
+      return this.service.findOne(id);
     }
 
     @Post()
@@ -58,65 +43,65 @@ export function BaseController<T extends BaseEntity, createDto, updateDto>(
     @UsePipes(updatePipe)
     @ApiBody({ type: [updateDto] })
     @ApiQuery({
-      name: '_id',
+      name: 'id',
       type: 'string',
       allowEmptyValue: false,
       description: 'used to update an object inside our database',
       required: true
     })
-    async update(@Param(new ValidateObjectIdPipe('')) params, @Body() dto: updateDto): Promise<T> {
-      return this.service.update(new ObjectId(params.id), dto);
+    async update(@Param('id', new ValidateUUIDPipe()) id: string, @Body() dto: updateDto): Promise<T> {
+      return this.service.update(id, dto);
     }
 
     @Patch('archive/:id')
     @ApiQuery({
-      name: '_id',
+      name: 'id',
       type: 'string',
       allowEmptyValue: false,
       description: 'used to archive an object inside our database',
       required: true
     })
-    async archive(@Param(new ValidateObjectIdPipe('')) params): Promise<T> {
-      return this.service.updateStatus(new ObjectId(params.id), true);
+    async archive(@Param('id', new ValidateUUIDPipe()) id: string): Promise<T> {
+      return this.service.updateStatus(id, true);
     }
 
     @Patch('unarchive/:id')
     @ApiQuery({
-      name: '_id',
+      name: 'id',
       type: 'string',
       allowEmptyValue: false,
       description: 'used to unarchive an object inside our database',
       required: true
     })
-    async unarchive(@Param(new ValidateObjectIdPipe('')) params): Promise<T> {
-      return this.service.updateStatus(new ObjectId(params.id), false);
+    async unarchive(@Param('id', new ValidateUUIDPipe()) id: string): Promise<T> {
+      return this.service.updateStatus(id, false);
     }
 
     @Delete(':id')
     @ApiQuery({
-      name: '_id',
+      name: 'id',
       type: 'string',
       allowEmptyValue: false,
       description: 'used to delete an object inside our database',
       required: true
     })
-    async delete(@Param(new ValidateObjectIdPipe('')) params): Promise<void> {
-      return this.service.delete(new ObjectId(params.id));
+    async delete(@Param('id', new ValidateUUIDPipe()) id: string): Promise<void> {
+      return this.service.delete(id);
     }
 
-    @Delete()
-    @ApiQuery({
-      description: 'This api clears the collections'
-    })
-    async clear(): Promise<void> {
-      return this.service.clear();
-    }
+    // @Delete()
+    // @ApiQuery({
+    //   description: 'This api clears the collections'
+    // })
+    // async clear(): Promise<void> {
+    //   return this.service.clear();
+    // }
 
-    @Get('search')
-    @ApiBody({ type: [QueryDto], description: 'This api returns results after querying from the database' })
-    async search(@Body() query: QueryDto<T>) {
-      return this.service.search(query);
-    }
+    // @Get('search')
+    // @ApiBody({ type: [String], description: 'This api returns results after querying from the database' })
+    // async search(@Body() query: QueryDto<T>) {
+    //   return this.service.search(query);
+    // }
   }
   return GenericsController;
 }

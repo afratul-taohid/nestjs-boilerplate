@@ -1,19 +1,24 @@
+// import { Exclude, Expose } from 'class-transformer';
+// // import { Column, Entity } from 'typeorm';
+// // import { BaseEntity } from '../../../shared/base/base.entity';
+//
+// @Entity('product')
 import { Exclude, Expose } from 'class-transformer';
-import { Column, Entity } from 'typeorm';
-import { BaseEntity } from '../../../shared/base/base.entity';
 
-@Entity('product')
 @Exclude()
-export class ProductEntity extends BaseEntity {
-  @Column()
+export class ProductEntity  {
+  // @Column()
   @Expose()
-  name: string;
+  id?: string;
 
-  @Column()
   @Expose()
-  price: number;
+  name?: string;
 
-  @Column()
+  // @Column()
   @Expose()
-  description: string;
+  price?: number;
+
+  // @Column()
+  @Expose()
+  description?: string;
 }

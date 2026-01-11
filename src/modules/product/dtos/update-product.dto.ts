@@ -7,16 +7,16 @@ export class ProductUpdateDto extends BaseUpdateDto {
   @IsNotEmpty()
   @IsString()
   @Length(4, 30)
-  name: string;
+  name?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  price: number;
+  price?: number;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
   @Length(3, 3000)
-  description: string;
+  description?: string;
 }

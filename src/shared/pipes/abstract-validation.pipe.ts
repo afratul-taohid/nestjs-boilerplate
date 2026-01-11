@@ -1,4 +1,5 @@
 import { ArgumentMetadata, Injectable, Type, ValidationPipe, ValidationPipeOptions } from '@nestjs/common';
+import { throwError } from '../utils/validation.helper';
 
 @Injectable()
 export class AbstractValidationPipe extends ValidationPipe {
@@ -9,11 +10,14 @@ export class AbstractValidationPipe extends ValidationPipe {
     super(options);
   }
 
-  async transform(value: any, metadata: ArgumentMetadata) {
+  async transform(value: any, metadata: ArgumentMetadata): Promise<any> {
+    // @ts-ignore
     const targetType = this.targetTypes[metadata.type];
     if (!targetType) {
       return super.transform(value, metadata);
     }
-    return super.transform(value, { ...metadata, metatype: targetType });
+    return super.transform(value, { ...metadata, metatype: targetType }).catch(err => {
+      throwError(err, 'Validation failed', 400);
+    });
   }
 }

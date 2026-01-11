@@ -1,7 +1,6 @@
 import { config } from 'dotenv';
 config();
 
-export const devConfig = () => ({
+export const localConfig = () => ({
   name: 'dev',
-  db: {}
 });
