@@ -7,11 +7,12 @@
 generator client {
   provider   = "prisma-client"
   output     = "../src/shared/prisma/generated"
-  engineType = "client"
 }
+  //engineType = "client"
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["eldercare"]
 }
 
 model User {
@@ -20,4 +21,6 @@ model User {
   password String
   // createdAt DateTime @default(now())
   // updatedAt DateTime @updatedAt
+
+  @@schema("eldercare")
 }

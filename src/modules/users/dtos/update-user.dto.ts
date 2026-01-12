@@ -1,19 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, Length } from 'class-validator';
-import { BaseUpdateDto } from '../../../shared/base/dtos/update-base.dto';
+// import { ApiProperty } from '@nestjs/swagger';
+// import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 
-export class UserUpdateDto extends BaseUpdateDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  @Length(3, 30)
-  readonly username?: string;
+// export class UserUpdateDto extends BaseUpdateDto {
+//   @ApiProperty()
+//   @IsNotEmpty()
+//   @Length(3, 30)
+//   readonly username?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsEmail()
-  readonly email?: string;
+//   @ApiProperty()
+//   @IsNotEmpty()
+//   @IsEmail()
+//   readonly email?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  readonly password?: string;
-}
+//   @ApiProperty()
+//   @IsNotEmpty()
+//   readonly password?: string;
+// }

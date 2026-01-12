@@ -1,21 +1,21 @@
-import { Body, Delete, Get, Param, Patch, Post, Put, Type, UsePipes } from '@nestjs/common';
+import { Body, Delete, Get, Param, Patch, Post, Put, Query, Type, UsePipes } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AbstractValidationPipe, ValidateUUIDPipe } from '../pipes';
 import { IBaseController } from './interfaces/base-controller.interface';
 import { IBaseService } from './interfaces/base-service.interface';
 
-export function BaseController<T extends { id: string }, createDto, updateDto>(
-  createDto: Type<createDto>,
-  updateDto: Type<updateDto>
-): Type<IBaseController<T, createDto, updateDto>> {
+export function BaseController<Model, CreateDTO, UpdateDTO>(
+  createDto: Type<CreateDTO>,
+  updateDto: Type<UpdateDTO>
+): Type<IBaseController<Model, CreateDTO, UpdateDTO>> {
   const createPipe = new AbstractValidationPipe({ whitelist: true, transform: true }, { body: createDto });
   const updatePipe = new AbstractValidationPipe({ whitelist: true, transform: true }, { body: updateDto });
 
-  class GenericsController implements IBaseController<T, createDto, updateDto> {
-    constructor(private readonly service: IBaseService<T, createDto, updateDto>) {}
+  class GenericsController implements IBaseController<Model, CreateDTO, UpdateDTO> {
+    constructor(private readonly service: IBaseService<Model, CreateDTO, UpdateDTO>) { }
 
     @Get()
-    async findAll(): Promise<T[]> {
+    async findAll(): Promise<Model[]> {
       return this.service.findAll();
     }
 
@@ -27,21 +27,21 @@ export function BaseController<T extends { id: string }, createDto, updateDto>(
       description: 'used to find an object inside our database',
       required: true
     })
-    async findOne(@Param('id', new ValidateUUIDPipe()) id: string): Promise<T> {
+    async findOne(@Param('id') id: string): Promise<Model> {
       return this.service.findOne(id);
     }
 
     @Post()
     @UsePipes(createPipe)
-    @ApiBody({ type: [createDto], required: true, description: 'used to create an object inside our database' })
+    @ApiBody({ type: createDto, required: true, description: 'used to create an object inside our database' })
     @ApiResponse({ description: 'returns the created entity' })
-    async create(@Body() dto: createDto): Promise<T> {
-      return this.service.create(dto);
+    async create(@Body() data: CreateDTO): Promise<Model> {
+      return this.service.create(data);
     }
 
     @Put(':id')
     @UsePipes(updatePipe)
-    @ApiBody({ type: [updateDto] })
+    @ApiBody({ type: updateDto })
     @ApiQuery({
       name: 'id',
       type: 'string',
@@ -49,7 +49,7 @@ export function BaseController<T extends { id: string }, createDto, updateDto>(
       description: 'used to update an object inside our database',
       required: true
     })
-    async update(@Param('id', new ValidateUUIDPipe()) id: string, @Body() dto: updateDto): Promise<T> {
+    async update(@Param('id', new ValidateUUIDPipe()) id: string, @Body() dto: UpdateDTO): Promise<Model> {
       return this.service.update(id, dto);
     }
 
@@ -61,7 +61,7 @@ export function BaseController<T extends { id: string }, createDto, updateDto>(
       description: 'used to archive an object inside our database',
       required: true
     })
-    async archive(@Param('id', new ValidateUUIDPipe()) id: string): Promise<T> {
+    async archive(@Param('id', new ValidateUUIDPipe()) id: string): Promise<Model> {
       return this.service.updateStatus(id, true);
     }
 
@@ -73,7 +73,7 @@ export function BaseController<T extends { id: string }, createDto, updateDto>(
       description: 'used to unarchive an object inside our database',
       required: true
     })
-    async unarchive(@Param('id', new ValidateUUIDPipe()) id: string): Promise<T> {
+    async unarchive(@Param('id', new ValidateUUIDPipe()) id: string): Promise<Model> {
       return this.service.updateStatus(id, false);
     }
 

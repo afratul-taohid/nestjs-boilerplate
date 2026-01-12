@@ -1,7 +1,5 @@
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
-import { PrismaClient } from '@prisma/client';
-
-
+import { PrismaClient } from '../prisma/generated/client';
 
 interface ErrorObject {
   [key: string]: string | string[];
@@ -47,7 +45,7 @@ export async function isFieldUnique(
     else isUnique = entity.id === id && entity[fieldKey]?.toLowerCase() === fieldValue.toLowerCase();
   } else isUnique = !entity;
 
-  if (!isUnique) throwError({ [`${fieldKey}IsUnique`]: `${fieldKey} must be unique.` }, 'Input data validation failed');
+  if (!isUnique) throwError({ [`${fieldKey}IsUnique`]: `${fieldKey} already exists.` }, 'Input data validation failed');
 
   return isUnique;
 }
