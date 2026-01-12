@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, Type, ValidationPipe, ValidationPipeOptions } from '@nestjs/common';
-import { throwError } from '../utils/validation.helper';
+import { throwError } from '../validators/validation.helper';
 
 @Injectable()
 export class AbstractValidationPipe extends ValidationPipe {

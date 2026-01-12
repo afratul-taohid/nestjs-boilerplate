@@ -1,6 +1,6 @@
 import { Body, Delete, Get, Param, Patch, Post, Put, Query, Type, UsePipes } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { AbstractValidationPipe, ValidateUUIDPipe } from '../pipes';
+import { AbstractValidationPipe, ValidateUUIDPipe } from './pipes';
 import { IBaseController } from './interfaces/base-controller.interface';
 import { IBaseService } from './interfaces/base-service.interface';
 

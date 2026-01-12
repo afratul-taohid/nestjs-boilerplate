@@ -5,6 +5,5 @@ export interface IBaseService<Model, CreateDTO, UpdateDTO> {
   update(id: string, data: UpdateDTO, userId?: string): Promise<Model>;
   updateStatus(id: string, archived: boolean, userId?: string): Promise<Model>;
   delete(id: string): Promise<void>;
-  clear(): Promise<void>;
-  // search(query: any): Promise<T[]>;
+  // clear(): Promise<void>;
 }

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from '../../shared/base.service';
 import { ProductCreateDto, ProductUpdateDto } from './dtos';
 import { User } from '../../shared/prisma/generated/client';
 import { UserDelegate } from '../../shared/prisma/generated/models/User';

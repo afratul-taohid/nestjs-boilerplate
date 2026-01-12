@@ -1,10 +1,10 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { BaseController } from '../../shared/base/base.controller';
+import { BaseController } from '../../shared/base.controller';
 import { ProductCreateDto, ProductUpdateDto } from './dtos';
 import { ProductService } from './product.service';
 import { Prisma, PrismaClient, User } from '../../shared/prisma/generated/client';
-import { isFieldUnique, validateEmail } from '../../shared/utils/validation.helper';
+import { isFieldUnique, validateEmail } from '../../shared/validators/validation.helper';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 @Controller('products')

@@ -1,11 +1,13 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { IGetUserAuthInfoRequest } from '../user-request.interface';
+import { IGetUserAuthInfoRequest } from './interfaces/user-request.interface';
 import { IBaseService } from './interfaces/base-service.interface';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from './prisma/prisma.service';
 
 @Injectable({ scope: Scope.REQUEST })
-export abstract class BaseService<Model, ModelDelegate, CreateDTO, UpdateDTO> implements IBaseService<Model, CreateDTO, UpdateDTO> {
+export abstract class BaseService<Model, ModelDelegate, CreateDTO, UpdateDTO>
+  implements IBaseService<Model, CreateDTO, UpdateDTO>
+{
   constructor(
     @Inject() protected readonly prisma: PrismaService,
     @Inject(REQUEST) protected readonly request: IGetUserAuthInfoRequest
@@ -26,7 +28,7 @@ export abstract class BaseService<Model, ModelDelegate, CreateDTO, UpdateDTO> im
 
   /**
    *
-   * @param dto : BaseCreateDto CreateDTO of the submitted entity
+   * @param dto : CreateDTO CreateDTO of the submitted entity
    * @returns : The created entity
    */
   async create(dto: CreateDTO): Promise<Model> {
@@ -40,7 +42,7 @@ export abstract class BaseService<Model, ModelDelegate, CreateDTO, UpdateDTO> im
   /**
    *
    * @param id : string ID of the entity
-   * @param dto : BaseUpdateDto DTO to be assigned for the entity
+   * @param dto : UpdateDTO UpdateDTO to be assigned for the entity
    * @returns : The modified entity
    */
   async update(id: string, dto: UpdateDTO): Promise<Model> {
@@ -82,9 +84,9 @@ export abstract class BaseService<Model, ModelDelegate, CreateDTO, UpdateDTO> im
     await (this.modelDelegate as any).delete({ where: { id } });
   }
 
-  async clear(): Promise<void> {
-    await (this.modelDelegate as any).deleteMany({});
-  }
+  // async clear(): Promise<void> {
+  //   await (this.modelDelegate as any).deleteMany({});
+  // }
 
   // async search(query: any): Promise<T[]> {
   //   return this.prisma[this.model].findMany(query) as unknown as T[];

@@ -45,7 +45,7 @@ export async function isFieldUnique(
     else isUnique = entity.id === id && entity[fieldKey]?.toLowerCase() === fieldValue.toLowerCase();
   } else isUnique = !entity;
 
-  if (!isUnique) throwError({ [`${fieldKey}IsUnique`]: `${fieldKey} already exists.` }, 'Input data validation failed');
+  if (!isUnique) throwError({ [`${fieldKey}`]: `${fieldKey} already exists.` }, 'Input data validation failed');
 
   return isUnique;
 }
