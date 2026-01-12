@@ -1,4 +1,11 @@
-import { ArgumentMetadata, Injectable, Type, ValidationPipe, ValidationPipeOptions } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  Injectable,
+  Type,
+  ValidationPipe,
+  ValidationPipeOptions
+} from '@nestjs/common';
 import { throwError } from '../validators/validation.helper';
 
 @Injectable()
@@ -17,7 +24,7 @@ export class AbstractValidationPipe extends ValidationPipe {
       return super.transform(value, metadata);
     }
     return super.transform(value, { ...metadata, metatype: targetType }).catch(err => {
-      throwError(err, 'Validation failed', 400);
+      throwError(err.response.message, 'Validation failed', 400);
     });
   }
 }

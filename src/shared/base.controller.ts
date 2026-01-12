@@ -32,7 +32,7 @@ export function BaseController<Model, CreateDTO, UpdateDTO>(
     }
 
     @Post()
-    @UsePipes(createPipe)
+    // @UsePipes(createPipe)
     @ApiBody({ type: createDto, required: true, description: 'used to create an object inside our database' })
     @ApiResponse({ description: 'returns the created entity' })
     async create(@Body() data: CreateDTO): Promise<Model> {

@@ -3,16 +3,13 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-// import { ValidationPipe } from './shared/pipes';
-
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import { join } from 'path';
-import favicon from 'serve-favicon';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { ResponseInterceptor } from './shared/interceptor/response.interceptor';
 import { GlobalExceptionFilter } from './shared/exception/global-exception.filter';
+import { buildValidationErrors } from './shared/utils/build-error';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -39,10 +36,7 @@ async function bootstrap() {
       exceptionFactory: errors => {
         return new BadRequestException({
           message: 'Validation failed',
-          errors: errors.map(err => ({
-            field: err.property,
-            errors: Object.values(err.constraints || {})
-          }))
+          errors: buildValidationErrors(errors)
         });
       }
     })
