@@ -7,7 +7,7 @@ export class ProductUpdateDto implements Prisma.UserUpdateInput {
   @ApiProperty()
   @IsString()
   @Length(4, 30)
-  email!: string;
+  email: string;
 
   // // @ApiProperty()
   // @IsNotEmpty()

@@ -7,10 +7,10 @@ export class ProductCreateDto implements Prisma.UserCreateInput {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()
-  email!: string;
+  email: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  password!: string;
+  password: string;
 }

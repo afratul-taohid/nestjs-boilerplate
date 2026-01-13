@@ -25,6 +25,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           errors = [`Already Exists`];
           break;
 
+        case 'P2021': // Record not found
+          status = 404;
+          message = 'Database Table not found';
+          break;
+
         case 'P2025': // Record not found
           status = 404;
           message = 'Record not found';
