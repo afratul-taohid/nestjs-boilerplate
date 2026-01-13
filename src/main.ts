@@ -10,6 +10,7 @@ import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { ResponseInterceptor } from './shared/interceptor/response.interceptor';
 import { GlobalExceptionFilter } from './shared/exception/global-exception.filter';
 import { buildValidationErrors } from './shared/utils/build-error';
+import { ResponseSanitizerInterceptor } from './shared/interceptor/response-sanitize.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -28,6 +29,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(new Reflector()));
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new ResponseSanitizerInterceptor(app.get(Reflector)));
   // app.useGlobalGuards(new RolesGuard(new Reflector()));
   app.useGlobalPipes(
     new ValidationPipe({
